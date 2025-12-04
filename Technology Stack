@@ -1,0 +1,530 @@
+Plan Özeti:
+
+  Teknoloji Stack:
+  - Frontend: React Native + TypeScript
+  - Backend: Node.js + Express + PostgreSQL + Prisma
+  - Ödeme: İyzico (Türk ödeme gateway'i)
+  - Push: Firebase Cloud Messaging
+  - Offline: WatermelonDB
+
+  Ana Özellikler:
+  ✅ Tüm web sitesi özellikleri (ürün kataloğu, sepet, sipariş)
+  ✅ Push bildirimleri (sipariş durumu, kampanyalar)
+  ✅ Konum servisleri (adres tespiti, harita)
+  ✅ Kamera (QR/barkod okuma)
+  ✅ Offline mod (ürünleri offline görüntüleme)
+
+  Timeline: 14 hafta (7 faz halinde)
+
+  Plan dosyası detaylı implementation adımları, API endpoint'leri, database
+  şeması ve kritik dosya yollarını içeriyor. Planı onayladığınızda
+  implementasyona başlayabiliriz!
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ Ready to code?
+
+ Here is Claude's plan:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Kalendos Mobil Uygulama - Implementation Plan
+
+ Proje Özeti
+
+ Kalendos.com.tr için React Native ile cross-platform (iOS & Android) e-ticaret mobil uygulaması geliştirilecek. Uygulama, tropikal meyve satışı yapan web sitesinin tüm özelliklerini mobil platformda
+ sunacak ve ek mobil yetenekler (push bildirimler, konum servisleri, kamera, offline mod) içerecek.
+
+ Teknoloji Stack'i
+
+ Frontend (Mobil Uygulama)
+
+ - Framework: React Native 0.73+
+ - Dil: TypeScript
+ - State Management: Redux Toolkit + RTK Query
+ - Navigasyon: React Navigation 6
+ - UI Kütüphanesi: React Native Paper / NativeBase
+ - Form Yönetimi: React Hook Form + Yup
+ - Local Storage: AsyncStorage + WatermelonDB (offline mode için)
+ - Push Notifications: Firebase Cloud Messaging (FCM)
+ - Maps: React Native Maps
+ - Camera: React Native Vision Camera
+ - Image Handling: React Native Fast Image
+
+ Backend API
+
+ - Runtime: Node.js 20 LTS
+ - Framework: Express.js
+ - Dil: TypeScript
+ - Database: PostgreSQL 16 (ürün & sipariş verileri)
+ - ORM: Prisma
+ - Cache: Redis (oturum & cache yönetimi)
+ - File Storage: AWS S3 / MinIO (ürün görselleri)
+ - Authentication: JWT + Refresh Tokens
+ - Payment: İyzico API (Türk ödeme gateway'i)
+ - Email: NodeMailer + SendGrid
+ - Push Service: Firebase Admin SDK
+ - API Documentation: Swagger/OpenAPI
+
+ DevOps & Hosting
+
+ - Backend Hosting: AWS EC2 / DigitalOcean / Vercel
+ - Database: AWS RDS / Supabase
+ - File Storage: AWS S3 / Cloudinary
+ - CI/CD: GitHub Actions / Bitrise
+ - Monitoring: Sentry (error tracking)
+ - Analytics: Firebase Analytics / Mixpanel
+
+ Uygulama Özellikleri
+
+ Temel Özellikler (Web sitesinden)
+
+ 1. Kullanıcı Yönetimi
+   - Kayıt / Giriş (email, telefon)
+   - Profil yönetimi
+   - Adres defteri
+   - Sipariş geçmişi
+ 2. Ürün Kataloğu
+   - Kategori bazlı listeleme (avokado, mango, ananas, vb.)
+   - Ürün detay sayfası (resimler, açıklama, fiyat, stok durumu)
+   - Arama fonksiyonu
+   - Filtreleme (kategori, fiyat aralığı, kg/adet)
+   - Sıralama (fiyat, popülerlik, yenilik)
+ 3. Sepet & Checkout
+   - Sepete ekleme/çıkarma
+   - Miktar güncelleme
+   - Sepet özeti (toplam, kargo, indirim)
+   - Adres seçimi
+   - Ödeme (kredi kartı, havale)
+   - Sipariş onayı
+ 4. Siparişler
+   - Sipariş listesi
+   - Sipariş detayı
+   - Kargo takibi
+   - Sipariş iptali (belirli durumlarda)
+ 5. İçerik
+   - Meyve Rehberi (blog yazıları)
+   - SSS
+   - Hakkımızda
+   - İletişim
+
+ Mobil-Özel Özellikler
+
+ 1. Push Bildirimleri
+   - Sipariş durumu güncellemeleri
+   - Kampanya & indirim bildirimleri
+   - Yeni ürün duyuruları
+   - Kargolanma & teslimat bildirimleri
+ 2. Konum Servisleri
+   - Otomatik konum tespiti
+   - Adres ekleme sırasında harita entegrasyonu
+   - Teslimat adresi için GPS koordinatları
+   - Yakındaki depo/şube gösterimi (gelecekte)
+ 3. Kamera Entegrasyonu
+   - QR kod okuma (ödeme için)
+   - Barkod okuma (ürün arama)
+   - Profil fotoğrafı çekme
+ 4. Offline Mod
+   - Ürün katalog cache'leme
+   - Son görüntülenen ürünler
+   - Sepet offline kullanımı
+   - Senkronizasyon (online olunca)
+
+ Proje Yapısı
+
+ kalendos-mobile/
+ ├── mobile/                     # React Native App
+ │   ├── android/               # Android native code
+ │   ├── ios/                   # iOS native code
+ │   ├── src/
+ │   │   ├── api/              # API client & endpoints
+ │   │   ├── components/       # Reusable components
+ │   │   ├── screens/          # Screen components
+ │   │   ├── navigation/       # Navigation setup
+ │   │   ├── store/            # Redux store & slices
+ │   │   ├── hooks/            # Custom hooks
+ │   │   ├── utils/            # Utility functions
+ │   │   ├── types/            # TypeScript types
+ │   │   ├── theme/            # Theme & styling
+ │   │   ├── assets/           # Images, fonts, icons
+ │   │   └── services/         # Push, location, camera services
+ │   ├── package.json
+ │   └── tsconfig.json
+ │
+ ├── backend/                   # Backend API
+ │   ├── src/
+ │   │   ├── controllers/      # Request handlers
+ │   │   ├── services/         # Business logic
+ │   │   ├── routes/           # API routes
+ │   │   ├── middlewares/      # Auth, validation, error handling
+ │   │   ├── models/           # Prisma schema
+ │   │   ├── utils/            # Helpers
+ │   │   ├── config/           # Configuration
+ │   │   └── types/            # TypeScript types
+ │   ├── prisma/
+ │   │   └── schema.prisma     # Database schema
+ │   ├── package.json
+ │   └── tsconfig.json
+ │
+ ├── admin-panel/              # (Optional) Admin dashboard
+ │   └── (React.js admin interface)
+ │
+ └── README.md
+
+ Database Schema (Prisma)
+
+ Ana Tablolar
+
+ - User (id, email, phone, password, name, createdAt, updatedAt)
+ - Address (id, userId, title, fullAddress, city, district, coordinates, isDefault)
+ - Product (id, name, slug, description, categoryId, price, stock, unit, images, isActive)
+ - Category (id, name, slug, icon, order)
+ - Cart (id, userId, items)
+ - Order (id, userId, orderNumber, items, total, status, addressId, paymentMethod, createdAt)
+ - BlogPost (id, title, slug, content, coverImage, category, publishedAt)
+ - Notification (id, userId, title, message, type, isRead, createdAt)
+ - Campaign (id, title, description, discount, startDate, endDate, isActive)
+
+ API Endpoints
+
+ Authentication
+
+ - POST /api/auth/register - Yeni kullanıcı kaydı
+ - POST /api/auth/login - Giriş yap
+ - POST /api/auth/refresh - Token yenile
+ - POST /api/auth/logout - Çıkış yap
+ - POST /api/auth/forgot-password - Şifre sıfırlama isteği
+ - POST /api/auth/reset-password - Şifre sıfırla
+
+ Users
+
+ - GET /api/user/profile - Profil bilgilerini getir
+ - PUT /api/user/profile - Profil güncelle
+ - GET /api/user/addresses - Adresleri listele
+ - POST /api/user/addresses - Yeni adres ekle
+ - PUT /api/user/addresses/:id - Adres güncelle
+ - DELETE /api/user/addresses/:id - Adres sil
+
+ Products
+
+ - GET /api/products - Ürünleri listele (pagination, filters)
+ - GET /api/products/:slug - Ürün detayı
+ - GET /api/categories - Kategorileri listele
+ - GET /api/products/search - Ürün ara
+
+ Cart
+
+ - GET /api/cart - Sepeti getir
+ - POST /api/cart/add - Sepete ürün ekle
+ - PUT /api/cart/update/:itemId - Sepet öğesi güncelle
+ - DELETE /api/cart/remove/:itemId - Sepetten çıkar
+ - DELETE /api/cart/clear - Sepeti temizle
+
+ Orders
+
+ - POST /api/orders - Sipariş oluştur
+ - GET /api/orders - Siparişleri listele
+ - GET /api/orders/:id - Sipariş detayı
+ - POST /api/orders/:id/cancel - Sipariş iptali
+
+ Payment
+
+ - POST /api/payment/initialize - Ödeme başlat (İyzico)
+ - POST /api/payment/callback - Ödeme sonucu
+ - POST /api/payment/verify - Ödeme doğrula
+
+ Content
+
+ - GET /api/blog/posts - Blog yazıları
+ - GET /api/blog/posts/:slug - Blog detayı
+ - GET /api/faq - SSS listesi
+ - GET /api/pages/:slug - Sayfa içeriği (hakkımızda, iletişim)
+
+ Notifications
+
+ - GET /api/notifications - Bildirimleri listele
+ - PUT /api/notifications/:id/read - Bildirimi okundu işaretle
+ - POST /api/notifications/register-token - FCM token kaydet
+
+ Implementation Phases
+
+ Phase 1: Proje Kurulumu & Authentication (Hafta 1-2)
+
+ Backend:
+ - Node.js + Express + TypeScript proje kurulumu
+ - PostgreSQL + Prisma setup
+ - Redis kurulumu
+ - JWT authentication sistemi
+ - User registration & login endpoints
+ - Email verification
+ - Password reset flow
+
+ Mobile:
+ - React Native proje init (TypeScript)
+ - Navigasyon yapısı kurulumu (Stack + Tab)
+ - Redux Toolkit + RTK Query setup
+ - Theme & styling sistemi
+ - Splash screen & onboarding
+ - Login/Register ekranları
+ - Form validation setup
+
+ Kritik Dosyalar:
+ - backend/src/routes/auth.routes.ts
+ - backend/src/controllers/auth.controller.ts
+ - backend/src/middlewares/auth.middleware.ts
+ - mobile/src/screens/Auth/LoginScreen.tsx
+ - mobile/src/screens/Auth/RegisterScreen.tsx
+ - mobile/src/store/slices/authSlice.ts
+
+ Phase 2: Ürün Kataloğu & Arama (Hafta 3-4)
+
+ Backend:
+ - Product & Category models
+ - Product CRUD endpoints
+ - Search & filtering logic
+ - Image upload (S3 setup)
+ - Pagination implementation
+ - Cache stratejisi (Redis)
+
+ Mobile:
+ - Home screen (featured products, categories)
+ - Product list screen (grid/list view)
+ - Product detail screen
+ - Category screen
+ - Search screen with filters
+ - Image caching & optimization
+ - Infinite scroll / pagination
+
+ Kritik Dosyalar:
+ - backend/src/routes/product.routes.ts
+ - backend/src/services/product.service.ts
+ - mobile/src/screens/Home/HomeScreen.tsx
+ - mobile/src/screens/Products/ProductListScreen.tsx
+ - mobile/src/screens/Products/ProductDetailScreen.tsx
+ - mobile/src/components/ProductCard.tsx
+
+ Phase 3: Sepet & Checkout (Hafta 5-6)
+
+ Backend:
+ - Cart management endpoints
+ - Order creation logic
+ - Payment integration (İyzico)
+ - Order status management
+ - Email notifications (order confirmation)
+
+ Mobile:
+ - Cart screen
+ - Cart badge (tab navigator)
+ - Checkout flow (multi-step)
+ - Address selection/creation
+ - Payment screen
+ - Order confirmation screen
+ - Form validation (shipping details)
+
+ Kritik Dosyalar:
+ - backend/src/routes/cart.routes.ts
+ - backend/src/routes/order.routes.ts
+ - backend/src/services/payment.service.ts
+ - mobile/src/screens/Cart/CartScreen.tsx
+ - mobile/src/screens/Checkout/CheckoutScreen.tsx
+ - mobile/src/screens/Checkout/PaymentScreen.tsx
+
+ Phase 4: Kullanıcı Profili & Siparişler (Hafta 7-8)
+
+ Backend:
+ - User profile endpoints
+ - Address CRUD
+ - Order history
+ - Order tracking
+ - Admin endpoints (order management)
+
+ Mobile:
+ - Profile screen
+ - Edit profile screen
+ - Address management
+ - Order history screen
+ - Order detail & tracking
+ - Settings screen
+ - Logout functionality
+
+ Kritik Dosyalar:
+ - backend/src/routes/user.routes.ts
+ - mobile/src/screens/Profile/ProfileScreen.tsx
+ - mobile/src/screens/Profile/EditProfileScreen.tsx
+ - mobile/src/screens/Orders/OrderHistoryScreen.tsx
+ - mobile/src/screens/Orders/OrderDetailScreen.tsx
+
+ Phase 5: Mobil-Özel Özellikler (Hafta 9-10)
+
+ Push Notifications:
+ - Firebase setup (both platforms)
+ - FCM token registration
+ - Backend notification service
+ - Push notification handler
+ - In-app notification display
+ - Notification settings
+
+ Konum Servisleri:
+ - Location permissions
+ - Maps integration
+ - Address auto-complete
+ - Current location detection
+ - Map-based address picker
+
+ Kamera:
+ - Camera permissions
+ - QR/Barcode scanner
+ - Image picker for profile photo
+ - Camera integration tests
+
+ Offline Mode:
+ - WatermelonDB setup
+ - Product data sync
+ - Offline cart management
+ - Sync strategy (background sync)
+ - Offline indicator UI
+
+ Kritik Dosyalar:
+ - mobile/src/services/pushNotification.service.ts
+ - mobile/src/services/location.service.ts
+ - mobile/src/services/camera.service.ts
+ - mobile/src/services/offline.service.ts
+ - mobile/src/database/schema.ts (WatermelonDB)
+ - backend/src/services/notification.service.ts
+
+ Phase 6: İçerik & Polish (Hafta 11-12)
+
+ Backend:
+ - Blog post endpoints
+ - FAQ endpoints
+ - Static page content
+ - Content management
+
+ Mobile:
+ - Blog list & detail screens
+ - FAQ screen
+ - About & Contact screens
+ - App tutorial/walkthrough
+ - Error handling improvements
+ - Loading states polish
+ - Animations & transitions
+ - App icon & splash screen
+ - Deep linking setup
+ - Share functionality
+
+ Testing & Optimization:
+ - Unit tests (critical functions)
+ - E2E tests (checkout flow)
+ - Performance optimization
+ - Memory leak fixes
+ - Bundle size optimization
+ - Image optimization
+ - API response caching
+
+ Kritik Dosyalar:
+ - mobile/src/screens/Content/BlogScreen.tsx
+ - mobile/src/screens/Content/FAQScreen.tsx
+ - mobile/src/components/Skeleton.tsx
+ - mobile/src/components/ErrorBoundary.tsx
+
+ Phase 7: Deployment & Launch (Hafta 13-14)
+
+ Backend:
+ - Production environment setup
+ - Database migration
+ - SSL certificates
+ - Environment variables
+ - Monitoring & logging (Sentry)
+ - Backup strategy
+ - Load testing
+
+ Mobile:
+ - iOS build configuration
+ - Android build configuration
+ - App signing (both platforms)
+ - Privacy policy & terms
+ - App Store metadata
+ - Google Play metadata
+ - Beta testing (TestFlight, Play Console)
+ - Final QA testing
+ - App submission
+
+ Post-Launch:
+ - Analytics setup
+ - Crash monitoring
+ - Performance monitoring
+ - User feedback collection
+ - Bug fix iterations
+
+ Önemli Geliştirme Notları
+
+ Security
+
+ - API rate limiting
+ - Input validation & sanitization
+ - SQL injection prevention (Prisma ORM)
+ - XSS protection
+ - HTTPS only
+ - Secure password hashing (bcrypt)
+ - JWT expiration & refresh strategy
+ - CORS configuration
+
+ Performance
+
+ - Image lazy loading
+ - API response caching
+ - Database query optimization
+ - CDN for static assets
+ - Gzip compression
+ - Code splitting (backend)
+ - React Native performance best practices
+
+ UX Considerations
+
+ - Türkçe dil desteği
+ - TL currency formatting
+ - Turkish address format
+ - Local payment methods (İyzico)
+ - Loading skeletons
+ - Error messages (user-friendly)
+ - Empty states
+ - Success feedback
+ - Form validation messages
+
+ Testing Strategy
+
+ - Backend unit tests (Jest)
+ - API integration tests
+ - Mobile component tests (Jest + Testing Library)
+ - E2E tests (Detox)
+ - Manual QA checklist
+
+ Proje Timeline
+
+ - Toplam Süre: 14 hafta (3.5 ay)
+ - Backend Development: 6-7 hafta
+ - Mobile Development: 10-11 hafta
+ - Testing & Polish: 2 hafta
+ - Deployment: 1 hafta
+
+ Kaynaklar & Bağımlılıklar
+
+ - React Native Documentation
+ - Prisma Documentation
+ - İyzico API Documentation
+ - Firebase Cloud Messaging
+ - React Native Maps
+ - React Native Vision Camera
+ - WatermelonDB Documentation
+
+ Sonraki Adımlar
+
+ 1. GitHub repository oluştur
+ 2. Backend proje kurulumu yap
+ 3. Mobile proje kurulumu yap
+ 4. Database schema tasarımını tamamla
+ 5. API endpoint documentation hazırla
+ 6. UI/UX design mockup'ları hazırla (Figma)
+ 7. Development başlat
+
+ ---
+ Not: Bu plan, sıfırdan bir mobil e-ticaret uygulaması geliştirmek için kapsamlı bir yol haritasıdır. İhtiyaçlarınıza göre önceliklendirme yapılabilir ve MVP (Minimum Viable Product) yaklaşımı ile daha
+ kısa sürede piyasaya çıkılabilir.
+

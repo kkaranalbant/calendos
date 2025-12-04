@@ -1,0 +1,669 @@
+Sadece Shopify'nin desteklemediği özellikler için:
+
+ Push Notifications
+
+ - POST /api/push/register - FCM token kaydet
+   - Body: { deviceId, fcmToken, platform, shopifyCustomerId? }
+ - DELETE /api/push/unregister - Token sil
+   - Body: { deviceId }
+
+ Webhooks (Shopify'dan gelen)
+
+ - POST /webhooks/orders/create - Yeni sipariş oluşturuldu
+ - POST /webhooks/orders/updated - Sipariş güncellendi
+ - POST /webhooks/orders/fulfilled - Sipariş kargolandı
+ - POST /webhooks/orders/cancelled - Sipariş iptal edildi
+ - POST /webhooks/products/update - Ürün stok güncellendi
+
+ Analytics (Opsiyonel)
+
+ - POST /api/analytics/track - Custom event tracking
+   - Body: { event, userId?, properties }
+
+ Implementation Phases
+
+ Phase 1: Shopify Setup & Proje Kurulumu (Hafta 1-2)
+
+ Shopify Setup:
+ - Shopify Partner hesabı oluştur
+ - Custom Shopify App oluştur (API access için)
+ - Storefront API access token al
+ - Admin API credentials ayarla
+ - Webhook'ları yapılandır (orders/create, orders/updated, etc.)
+ - Test store kurulumu (eğer yoksa)
+ - Shopify App scopes belirleme:
+   - unauthenticated_read_product_listings
+   - unauthenticated_write_checkouts
+   - unauthenticated_read_customers
+   - read_orders, write_orders
+
+ Minimal Backend:
+ - Node.js + Express + TypeScript kurulumu
+ - PostgreSQL + Prisma setup (minimal schema)
+ - Shopify webhook handler setup
+ - Webhook signature verification
+ - Firebase Admin SDK kurulumu (push için)
+ - Environment variables (.env)
+
+ Mobile:
+ - React Native proje init (TypeScript)
+ - Apollo Client setup (Shopify GraphQL için)
+ - Shopify Storefront API client konfigürasyonu
+ - Navigasyon yapısı (Stack + Tab Navigator)
+ - Redux Toolkit setup
+ - Theme & styling sistemi
+ - Splash screen & onboarding
+ - Environment variables (.env)
+
+ Kritik Dosyalar:
+ - shopify-app/shopify.app.toml - Shopify app config
+ - backend/src/config/shopify.config.ts - Shopify credentials
+ - backend/src/middlewares/webhook.middleware.ts - Webhook verification
+ - mobile/src/shopify/client.ts - Apollo/Shopify client setup
+ - mobile/src/navigation/RootNavigator.tsx
+ - mobile/src/store/store.ts
+
+ Phase 2: Authentication & Customer Management (Hafta 2-3)
+
+ Mobile:
+ - Login/Register ekranları
+ - Shopify Customer mutations entegrasyonu (customerCreate, customerAccessTokenCreate)
+ - Form validation (email, şifre)
+ - Access token yönetimi (Redux store)
+ - Şifre sıfırlama flow
+ - Email doğrulama (Shopify tarafında)
+ - Onboarding screens
+ - Biometric authentication (Touch ID / Face ID) - opsiyonel
+
+ Kritik Dosyalar:
+ - mobile/src/screens/Auth/LoginScreen.tsx
+ - mobile/src/screens/Auth/RegisterScreen.tsx
+ - mobile/src/screens/Auth/ForgotPasswordScreen.tsx
+ - mobile/src/shopify/queries/customer.queries.ts
+ - mobile/src/shopify/mutations/customer.mutations.ts
+ - mobile/src/store/slices/authSlice.ts
+ - mobile/src/utils/tokenStorage.ts
+
+ Phase 3: Ürün Kataloğu & Arama (Hafta 4-5)
+
+ Mobile:
+ - Shopify Products & Collections GraphQL queries
+ - Home screen (featured products, categories)
+ - Product list screen (grid/list view)
+ - Product detail screen (variants, images, description)
+ - Category/Collection screen
+ - Search screen (Shopify search query)
+ - Filters (fiyat, kategori, stok durumu)
+ - Image lazy loading & caching
+ - Infinite scroll / pagination (GraphQL edges)
+ - Product favorileme (local storage)
+
+ Backend:
+ - Cache layer (Redis) - Shopify responses için
+ - Webhook: products/update - Stok değişikliği push notifications
+
+ Kritik Dosyalar:
+ - mobile/src/shopify/queries/product.queries.ts
+ - mobile/src/shopify/queries/collection.queries.ts
+ - mobile/src/screens/Home/HomeScreen.tsx
+ - mobile/src/screens/Products/ProductListScreen.tsx
+ - mobile/src/screens/Products/ProductDetailScreen.tsx
+ - mobile/src/screens/Products/SearchScreen.tsx
+ - mobile/src/components/ProductCard.tsx
+ - mobile/src/hooks/useProducts.ts
+ - backend/src/routes/webhooks.routes.ts
+
+ Phase 4: Sepet & Checkout (Hafta 6-7)
+
+ Mobile:
+ - Shopify Cart API entegrasyonu (GraphQL)
+ - Cart screen (ürünler, toplam, kargo)
+ - Cart badge (tab navigator - item count)
+ - Add to cart functionality
+ - Quantity update/remove
+ - Checkout flow:
+   - Adres seçimi/ekleme (Shopify MailingAddress)
+   - Shipping method seçimi
+   - Ödeme yöntemi (Shopify Checkout URL)
+   - WebView ile Shopify checkout sayfası (native payment)
+ - Order confirmation screen
+ - Cart persistence (AsyncStorage + Shopify cart ID)
+
+ Backend:
+ - Shopify Checkout completion tracking
+ - Webhook: checkouts/create, checkouts/update
+
+ Not: Shopify'ın native checkout'unu kullanacağız. Mobil uygulamadan Shopify'ın checkout URL'ine yönlendirme yapılacak. Bu, Shopify'nin tüm ödeme yöntemlerini (kredi kartı, havale, vb.) desteklememizi
+ sağlar ve PCI compliance sorunlarını ortadan kaldırır.
+
+ Kritik Dosyalar:
+ - mobile/src/shopify/mutations/cart.mutations.ts
+ - mobile/src/screens/Cart/CartScreen.tsx
+ - mobile/src/screens/Checkout/CheckoutWebView.tsx
+ - mobile/src/screens/Checkout/AddressScreen.tsx
+ - mobile/src/screens/Checkout/OrderConfirmationScreen.tsx
+ - mobile/src/hooks/useCart.ts
+ - mobile/src/store/slices/cartSlice.ts
+
+ Phase 5: Kullanıcı Profili & Siparişler (Hafta 8-9)
+
+ Mobile:
+ - Shopify Customer API queries (customer info, addresses, orders)
+ - Profile screen (ad, soyad, email, telefon)
+ - Edit profile screen
+ - Address management (list, add, edit, delete, default address)
+ - Order history screen (Shopify orders query)
+ - Order detail & tracking (order status, items, shipping info)
+ - Settings screen
+   - Bildirim tercihleri
+   - Dil seçimi
+   - Dark mode (opsiyonel)
+ - Logout functionality
+ - Account deletion (GDPR compliance)
+
+ Backend:
+ - Webhook: orders/create → Push notification gönder
+ - Webhook: orders/fulfilled → "Siparişiniz kargoya verildi" push
+ - Webhook: orders/cancelled → "Siparişiniz iptal edildi" push
+
+ Kritik Dosyalar:
+ - mobile/src/shopify/queries/customer.queries.ts
+ - mobile/src/screens/Profile/ProfileScreen.tsx
+ - mobile/src/screens/Profile/EditProfileScreen.tsx
+ - mobile/src/screens/Profile/AddressListScreen.tsx
+ - mobile/src/screens/Profile/AddAddressScreen.tsx
+ - mobile/src/screens/Orders/OrderHistoryScreen.tsx
+ - mobile/src/screens/Orders/OrderDetailScreen.tsx
+ - mobile/src/screens/Settings/SettingsScreen.tsx
+ - backend/src/services/webhook.service.ts
+ - backend/src/services/push.service.ts
+
+ Phase 6: Mobil-Özel Özellikler (Hafta 10-11)
+
+ Push Notifications:
+ - Firebase setup (iOS & Android)
+   - Firebase project oluştur
+   - APNs certificate (iOS)
+   - google-services.json & GoogleService-Info.plist
+ - React Native Firebase kurulumu
+ - FCM token registration
+   - Token alma ve backend'e kaydetme
+   - Token refresh handling
+ - Push notification handler
+   - Foreground notifications
+   - Background notifications
+   - Notification tap handling (deep linking)
+ - In-app notification center
+ - Notification preferences (settings screen)
+
+ Konum Servisleri:
+ - Location permissions (iOS & Android)
+ - React Native Maps kurulumu
+ - Maps integration
+   - Adres seçim ekranında harita gösterimi
+   - Marker placement
+   - Current location button
+ - Google Places API (adres auto-complete)
+ - Reverse geocoding (koordinat → adres)
+ - Map-based address picker
+
+ Kamera:
+ - Camera permissions
+ - React Native Vision Camera kurulumu
+ - QR/Barcode scanner
+   - QR code okuma (ödeme için)
+   - Barcode okuma (ürün arama)
+ - Image picker for profile photo (React Native Image Picker)
+ - Camera UI customization
+
+ Offline Mode:
+ - WatermelonDB setup
+ - Database schema (products, collections, cart)
+ - Shopify data sync strategy
+   - Background sync (app launch)
+   - Pull-to-refresh
+   - Sync indicator
+ - Offline product browsing
+ - Offline cart management
+ - Conflict resolution (online/offline changes)
+ - Network status detection
+ - Offline indicator UI
+
+ Kritik Dosyalar:
+ - mobile/src/services/pushNotification.service.ts
+ - mobile/src/services/location.service.ts
+ - mobile/src/services/camera.service.ts
+ - mobile/src/services/offline.service.ts
+ - mobile/src/database/schema.ts (WatermelonDB)
+ - mobile/src/database/sync.ts
+ - mobile/src/screens/Checkout/MapAddressPickerScreen.tsx
+ - mobile/src/screens/Scanner/QRScannerScreen.tsx
+ - backend/src/routes/push.routes.ts
+ - backend/src/services/push.service.ts
+
+ Phase 7: İçerik & Polish (Hafta 12-13)
+
+ Mobile:
+ - Shopify Blog & Pages API entegrasyonu
+ - Blog list screen
+ - Blog detail screen (HTML rendering)
+ - FAQ screen (Shopify metafields veya pages)
+ - About screen (Shopify page)
+ - Contact screen (form + email/phone)
+ - App tutorial/walkthrough (first launch)
+ - Error handling improvements
+   - Error boundary
+   - Network error screens
+   - Retry mechanisms
+ - Loading states polish
+   - Skeleton screens
+   - Shimmer effects
+   - Progressive loading
+ - Animations & transitions
+   - Screen transitions
+   - Micro-interactions
+   - Gesture animations
+ - App icon & splash screen
+ - Deep linking setup
+   - Product deep links (kalendos://product/:handle)
+   - Order deep links (kalendos://order/:id)
+   - Universal links (iOS)
+   - App links (Android)
+ - Share functionality
+   - Ürün paylaşma (social media)
+   - Referral links
+
+ Testing & Optimization:
+ - Unit tests (utils, hooks)
+ - Integration tests (API calls)
+ - E2E tests (Detox - checkout flow)
+ - Performance optimization
+   - React Native performance monitoring
+   - Image optimization
+   - Bundle size reduction
+   - Lazy loading
+ - Memory leak detection & fixes
+ - Accessibility (a11y) improvements
+   - Screen reader support
+   - Color contrast
+   - Touch target sizes
+
+ Kritik Dosyalar:
+ - mobile/src/shopify/queries/blog.queries.ts
+ - mobile/src/screens/Content/BlogListScreen.tsx
+ - mobile/src/screens/Content/BlogDetailScreen.tsx
+ - mobile/src/screens/Content/FAQScreen.tsx
+ - mobile/src/screens/Content/AboutScreen.tsx
+ - mobile/src/components/Skeleton.tsx
+ - mobile/src/components/ErrorBoundary.tsx
+ - mobile/src/navigation/linking.ts (deep linking config)
+ - mobile/src/utils/share.util.ts
+
+ Phase 8: Deployment & Launch (Hafta 14)
+
+ Shopify Production Setup:
+ - Production Shopify app onaylama
+ - Production API credentials
+ - Webhook URLs güncelleme (production)
+ - Shopify app listing (optional - eğer public app ise)
+
+ Backend Deployment:
+ - Production environment setup
+   - AWS/DigitalOcean/Railway
+   - PostgreSQL database setup
+   - Redis setup (optional)
+ - Environment variables (.env.production)
+ - SSL certificates (Let's Encrypt)
+ - Shopify webhook endpoints expose
+ - Monitoring & logging
+   - Sentry (error tracking)
+   - Winston/Pino (logging)
+   - Uptime monitoring
+ - Backup strategy (database)
+ - Security hardening
+   - Rate limiting
+   - DDOS protection (Cloudflare)
+   - Webhook signature verification
+
+ Mobile App Build & Submission:
+
+ iOS:
+ - Apple Developer account
+ - App Bundle ID & provisioning profiles
+ - Push notification certificates (APNs)
+ - App Store Connect setup
+ - iOS build configuration
+   - Release scheme
+   - Code signing
+   - Build version/number
+ - TestFlight beta testing
+   - Internal testing
+   - External testing (beta testers)
+ - App Store metadata
+   - Screenshots (5.5", 6.5", 12.9")
+   - App description (Türkçe)
+   - Keywords
+   - Privacy policy URL
+   - Support URL
+ - App Review submission
+ - Age rating & content declarations
+
+ Android:
+ - Google Play Console account
+ - App signing key & upload key
+ - Google Play Store listing
+ - Android build configuration
+   - Release build type
+   - ProGuard/R8 configuration
+   - APK/AAB generation
+ - Internal testing track
+ - Closed beta testing
+ - Open beta testing (optional)
+ - Play Store metadata
+   - Screenshots
+   - Feature graphic
+   - App description (Türkçe)
+   - Privacy policy
+   - Content rating (IARC)
+ - Production release submission
+
+ Final QA Checklist:
+ - Authentication flow (login, register, password reset)
+ - Product browsing (home, categories, search, filters)
+ - Product details (images, variants, add to cart)
+ - Cart (add, update, remove, persist)
+ - Checkout flow (address, payment, order confirmation)
+ - Profile management (edit, addresses)
+ - Order history & tracking
+ - Push notifications (order updates, campaigns)
+ - Offline mode (product browsing, cart)
+ - Camera (QR scanner, barcode)
+ - Maps (address picker, current location)
+ - Deep linking (product, order links)
+ - Error handling (network errors, API errors)
+ - Performance (load times, animations)
+ - Accessibility (screen reader, contrast)
+
+ Post-Launch:
+ - Analytics setup
+   - Firebase Analytics
+   - Mixpanel/Amplitude (optional)
+   - Custom event tracking
+ - Crash monitoring (Sentry/Firebase Crashlytics)
+ - Performance monitoring
+   - React Native Performance
+   - Shopify API response times
+ - App Store Optimization (ASO)
+   - Keyword optimization
+   - A/B testing (screenshots, description)
+ - User feedback collection
+   - In-app feedback form
+   - App Store reviews monitoring
+ - Bug fix iterations
+ - Feature roadmap planning
+
+ Kritik Dosyalar:
+ - mobile/android/app/build.gradle - Android build config
+ - mobile/ios/kalendos.xcodeproj - iOS project config
+ - mobile/app.json / mobile/package.json - App metadata
+ - backend/.env.production - Production environment variables
+ - backend/ecosystem.config.js - PM2 configuration (if using)
+
+ Önemli Geliştirme Notları
+
+ Security
+
+ - API rate limiting
+ - Input validation & sanitization
+ - SQL injection prevention (Prisma ORM)
+ - XSS protection
+ - HTTPS only
+ - Secure password hashing (bcrypt)
+ - JWT expiration & refresh strategy
+ - CORS configuration
+
+ Performance
+
+ - Image lazy loading
+ - API response caching
+ - Database query optimization
+ - CDN for static assets
+ - Gzip compression
+ - Code splitting (backend)
+ - React Native performance best practices
+
+ UX Considerations
+
+ - Türkçe dil desteği
+ - TL currency formatting
+ - Turkish address format
+ - Local payment methods (İyzico)
+ - Loading skeletons
+ - Error messages (user-friendly)
+ - Empty states
+ - Success feedback
+ - Form validation messages
+
+ Testing Strategy
+
+ - Backend unit tests (Jest)
+ - API integration tests
+ - Mobile component tests (Jest + Testing Library)
+ - E2E tests (Detox)
+ - Manual QA checklist
+
+ Proje Timeline
+
+ Toplam Süre: 14 hafta (3.5 ay)
+
+ | Faz     | Hafta | Açıklama                                            |
+ |---------|-------|-----------------------------------------------------|
+ | Phase 1 | 1-2   | Shopify setup & proje kurulumu                      |
+ | Phase 2 | 2-3   | Authentication & customer management                |
+ | Phase 3 | 4-5   | Ürün kataloğu & arama                               |
+ | Phase 4 | 6-7   | Sepet & checkout                                    |
+ | Phase 5 | 8-9   | Profil & siparişler                                 |
+ | Phase 6 | 10-11 | Mobil-özel özellikler (push, maps, camera, offline) |
+ | Phase 7 | 12-13 | İçerik & polish                                     |
+ | Phase 8 | 14    | Deployment & launch                                 |
+
+ Milestone'lar:
+ - Hafta 3: MVP authentication (login/register çalışıyor)
+ - Hafta 5: Ürün kataloğu tamamlandı (browse & search)
+ - Hafta 7: Checkout flow çalışıyor (sipariş verilebiliyor)
+ - Hafta 9: User profile & order tracking tamamlandı
+ - Hafta 11: Tüm mobil-özel özellikler entegre
+ - Hafta 13: Beta testing başladı
+ - Hafta 14: Production launch
+
+ Not: Shopify entegrasyonu sayesinde backend development süresi önemli ölçüde azaldı (14 haftadan 2-3 haftaya). Backend sadece minimal özellikler için kullanılacak.
+
+ Kaynaklar & Bağımlılıklar
+
+ Shopify
+
+ - https://shopify.dev/api/storefront
+ - https://shopify.dev/api/admin
+ - https://shopify.dev/api/admin/webhooks
+ - https://shopify.dev/custom-storefronts/mobile-buy-sdk
+ - https://shopify.dev/api/storefront/reference
+ - https://shopify.dev/apps
+
+ React Native
+
+ - https://reactnative.dev/
+ - https://reactnavigation.org/
+ - https://redux-toolkit.js.org/
+ - https://www.apollographql.com/docs/react/
+ - https://callstack.github.io/react-native-paper/
+
+ Mobile Features
+
+ - https://firebase.google.com/docs/cloud-messaging
+ - https://rnfirebase.io/
+ - https://github.com/react-native-maps/react-native-maps
+ - https://react-native-vision-camera.com/
+ - https://watermelondb.dev/
+ - https://github.com/react-native-image-picker/react-native-image-picker
+
+ Backend (Minimal)
+
+ - https://nodejs.org/
+ - https://expressjs.com/
+ - https://www.prisma.io/
+ - https://firebase.google.com/docs/admin/setup
+
+ Testing
+
+ - https://jestjs.io/
+ - https://callstack.github.io/react-native-testing-library/
+ - https://wix.github.io/Detox/
+
+ Tools & Services
+
+ - https://partners.shopify.com/
+ - https://play.google.com/console/
+ - https://appstoreconnect.apple.com/
+ - https://sentry.io/
+ - https://console.firebase.google.com/
+
+ Shopify Entegrasyonu Avantajları
+
+ Shopify API'lerini kullanmanın sağladığı faydalar:
+
+ 1. Hızlı Development
+ - Backend development süresi %80 azaldı
+ - Ürün, sipariş, müşteri yönetimi hazır
+ - Payment gateway entegrasyonu hazır (Shopify Payments)
+ - Email notifications hazır
+
+ 2. Güvenlik & Compliance
+ - PCI DSS compliance (Shopify tarafından sağlanıyor)
+ - Secure checkout
+ - GDPR compliance
+ - Data encryption
+
+ 3. Maliyet Tasarrufu
+ - Minimal backend infrastructure
+ - Reduced server costs
+ - No payment gateway integration fees
+ - Shopify's CDN for product images
+
+ 4. Scalability
+ - Shopify'ın infrastructure'ı kullanılıyor
+ - Auto-scaling
+ - Global CDN
+ - 99.99% uptime SLA
+
+ 5. Özellikler
+ - Inventory management
+ - Order fulfillment
+ - Multi-currency support
+ - Discount codes & promotions
+ - Gift cards
+ - Blog & content management
+
+ Shopify Limitasyonları & Çözümleri
+
+ | Limitasyon                         | Çözüm                               |
+ |------------------------------------|-------------------------------------|
+ | Push notifications yok             | Custom backend ile FCM entegrasyonu |
+ | Advanced analytics yok             | Custom backend + Firebase Analytics |
+ | Offline mode yok                   | WatermelonDB ile local caching      |
+ | Custom UI limitations              | React Native ile tamamen custom UI  |
+ | API rate limits (Storefront: 60/s) | Request throttling & caching        |
+
+ Maliyet & Bütçe Hususları
+
+ Aylık Operasyonel Maliyetler (Tahmini)
+
+ Shopify:
+ - Mevcut Shopify planı (zaten ödeniyor) - $0 ek maliyet
+ - Shopify API kullanımı - Ücretsiz (plan dahilinde)
+
+ Mobile App Infrastructure:
+ - Firebase (FCM, Analytics, Crashlytics)
+   - Spark Plan (Free): 10M notifications/month - $0
+   - Blaze Plan (Pay as you go): ~$10-50/month
+ - Backend Hosting (Minimal)
+   - AWS EC2 t3.micro: ~$10/month
+   - veya DigitalOcean Droplet: ~$12/month
+   - veya Railway: ~$5-20/month
+ - Database (PostgreSQL)
+   - AWS RDS micro: ~$15/month
+   - veya Supabase free tier: $0
+   - veya Railway: ~$5/month
+ - Google Maps API
+   - $200 free credit/month
+   - Sonrası: ~$5-20/month (kullanıma göre)
+
+ Developer Accounts:
+ - Apple Developer Program: $99/year (tek seferlik)
+ - Google Play Console: $25 (tek seferlik)
+
+ Total Tahmini Aylık Maliyet: $20-100/month (kullanıma göre değişir)
+
+ Geliştirme Maliyetleri
+
+ - Eğer outsource edilecekse: ~$15,000-30,000 (14 hafta, freelance developer rate'lerine göre)
+ - MVP için: ~$8,000-15,000 (6-8 hafta)
+ - In-house development: Sadece developer maaşı
+
+ Not: Shopify entegrasyonu sayesinde backend infrastructure maliyetleri çok düşük. Eğer custom backend olsaydı, aylık $200-500 arası maliyet olabilirdi.
+
+ MVP (Minimum Viable Product) Yaklaşımı
+
+ Eğer daha hızlı piyasaya çıkmak isterseniz, aşağıdaki MVP planı ile 6-8 haftada launch yapılabilir:
+
+ MVP Scope (6-8 Hafta):
+ 1. ✅ Shopify integration (Phase 1)
+ 2. ✅ Authentication (Phase 2)
+ 3. ✅ Product catalog & search (Phase 3)
+ 4. ✅ Cart & checkout (Phase 4)
+ 5. ✅ Basic profile & orders (Phase 5 - basit versiyon)
+ 6. ❌ Push notifications (post-MVP)
+ 7. ❌ Offline mode (post-MVP)
+ 8. ❌ Camera/QR scanner (post-MVP)
+ 9. ❌ Advanced maps (post-MVP)
+
+ Post-MVP Features (4-6 hafta):
+ - Push notifications
+ - Offline mode
+ - Camera features
+ - Advanced maps
+ - Content & polish
+ - Advanced analytics
+
+ Sonraki Adımlar
+
+ Hemen Yapılacaklar:
+
+ 1. Shopify Partner Hesabı Oluştur
+   - https://partners.shopify.com/ adresinden kayıt ol
+   - Development store oluştur (test için)
+ 2. Shopify App Oluştur
+   - Partner Dashboard → Apps → Create app
+   - Custom app olarak oluştur
+   - Storefront API access token al
+   - Admin API scopes ayarla
+ 3. GitHub Repository Oluştur
+   - Monorepo yapısı (mobile + backend)
+   - .gitignore (node_modules, .env, vb.)
+   - README.md ile setup instructions
+ 4. Firebase Projesi Oluştur
+   - https://console.firebase.google.com/
+   - iOS & Android app'leri ekle
+   - FCM için config dosyalarını indir
+ 5. Development Environment Setup
+   - Node.js 20 LTS kurulumu
+   - React Native CLI kurulumu
+   - Xcode (Mac için iOS development)
+   - Android Studio (Android development)
+   - PostgreSQL kurulumu
+ 6. UI/UX Design
+   - Figma mockup'ları hazırla (opsiyonel ama önerilir)
+   - Kalendos brand colors & typography
+   - Screen flow diagram
+ 7. Project Kickoff
+   - Development başlat (Phase 1)
+

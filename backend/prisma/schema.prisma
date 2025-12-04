@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Push notification tokens
+model PushToken {
+  id                String   @id @default(uuid())
+  shopifyCustomerId String?  // Shopify customer ID (optional)
+  deviceId          String   @unique
+  fcmToken          String
+  platform          String   // "ios" or "android"
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([shopifyCustomerId])
+  @@index([isActive])
+}
+
+// Notification log for tracking sent notifications
+model NotificationLog {
+  id                String   @id @default(uuid())
+  shopifyCustomerId String?
+  shopifyOrderId    String?
+  title             String
+  message           String
+  type              String   // "order_update", "campaign", "general"
+  sentAt            DateTime @default(now())
+  delivered         Boolean  @default(false)
+
+  @@index([shopifyCustomerId])
+  @@index([shopifyOrderId])
+  @@index([sentAt])
+}
+
+// App settings and configuration
+model AppSettings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
