@@ -104,7 +104,29 @@ export const AddressFormScreen: React.FC<AddressFormScreenProps> = ({ navigation
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
+    console.log('🔵 AddressForm handleSave çağrıldı, mode:', mode);
+    console.log('📝 Form verileri:', {
+      firstName,
+      lastName,
+      address1,
+      city,
+      province,
+      zip,
+    });
+
+    const isValid = validateForm();
+    console.log('🔍 Form geçerli mi?', isValid);
+    console.log('❌ Validasyon hataları:', errors);
+
+    if (!isValid) {
+      console.log('❌ Form validasyon hatası - işlem iptal');
+      Alert.alert(
+        'Form Hatası',
+        'Lütfen tüm zorunlu alanları doğru şekilde doldurun:\n' +
+          Object.entries(errors)
+            .map(([key, value]) => `• ${value}`)
+            .join('\n')
+      );
       return;
     }
 
@@ -120,9 +142,13 @@ export const AddressFormScreen: React.FC<AddressFormScreenProps> = ({ navigation
       phone: phone.trim() || undefined,
     };
 
+    console.log('✅ Form geçerli, adres verisi:', addressData);
+
     try {
       if (mode === 'add') {
-        await createAddress(addressData);
+        console.log('➕ createAddress çağrılıyor...');
+        const result = await createAddress(addressData);
+        console.log('✅ createAddress başarılı:', result);
         Alert.alert('Başarılı', 'Adres eklendi', [
           {
             text: 'Tamam',
@@ -130,7 +156,9 @@ export const AddressFormScreen: React.FC<AddressFormScreenProps> = ({ navigation
           },
         ]);
       } else if (mode === 'edit' && addressId) {
-        await updateAddress(addressId, addressData);
+        console.log('✏️ updateAddress çağrılıyor, addressId:', addressId);
+        const result = await updateAddress(addressId, addressData);
+        console.log('✅ updateAddress başarılı:', result);
         Alert.alert('Başarılı', 'Adres güncellendi', [
           {
             text: 'Tamam',
@@ -139,6 +167,7 @@ export const AddressFormScreen: React.FC<AddressFormScreenProps> = ({ navigation
         ]);
       }
     } catch (error: any) {
+      console.error('❌ Hata:', error);
       Alert.alert('Hata', error.message || 'Adres kaydedilirken bir hata oluştu');
     }
   };

@@ -7,6 +7,7 @@ import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import { CheckoutWebView, OrderConfirmationScreen } from '../screens/Checkout';
 import { OrderDetailScreen } from '../screens/Profile';
+import { ProductDetailScreen } from '../screens/Products';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -21,6 +22,14 @@ const RootNavigator: React.FC = () => {
         ) : (
           <>
             <Stack.Screen name="Main" component={MainNavigator} />
+            <Stack.Screen
+              name="ProductDetail"
+              component={ProductDetailScreen}
+              options={{
+                headerShown: true,
+                title: 'Ürün Detayı',
+              }}
+            />
             <Stack.Screen
               name="CheckoutWebView"
               component={CheckoutWebView}

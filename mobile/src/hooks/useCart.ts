@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@apollo/client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
@@ -18,8 +18,11 @@ import {
   CART_LINES_REMOVE,
   GET_CART,
 } from '../shopify/mutations/cart.mutations';
+import { MOCK_PRODUCTS } from '../shopify/mockData';
+import IS_MOCK_MODE from '../config/mockMode';
 
 const CART_ID_KEY = '@kalendos_cart_id';
+const MOCK_CART_KEY = '@kalendos_mock_cart';
 
 interface CartLine {
   id: string;
@@ -50,8 +53,182 @@ interface CartLine {
 export const useCart = () => {
   const dispatch = useAppDispatch();
   const { cartId, items, total, itemCount } = useAppSelector((state) => state.cart);
+  const [loading, setLoading] = useState(false);
 
-  // Mutations
+  // Mock Mode - Direkt Redux kullan
+  if (IS_MOCK_MODE) {
+    // Load cart from storage on mount
+    useEffect(() => {
+      loadMockCart();
+    }, []);
+
+    const loadMockCart = async () => {
+      try {
+        const cartData = await AsyncStorage.getItem(MOCK_CART_KEY);
+        if (cartData) {
+          const cart = JSON.parse(cartData);
+          dispatch(setCartItems(cart.items));
+          dispatch(setCartTotal(cart.total));
+        }
+      } catch (error) {
+        console.error('Error loading mock cart:', error);
+      }
+    };
+
+    const saveMockCart = async (newItems: any[], newTotal: any) => {
+      try {
+        const cart = { items: newItems, total: newTotal };
+        await AsyncStorage.setItem(MOCK_CART_KEY, JSON.stringify(cart));
+      } catch (error) {
+        console.error('Error saving mock cart:', error);
+      }
+    };
+
+    const addToCart = async (variantId: string, quantity: number = 1) => {
+      setLoading(true);
+      try {
+        // Simulate network delay
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // Find product by variant ID
+        const product = MOCK_PRODUCTS.find(
+          (p) => p.variants.edges[0].node.id === variantId
+        );
+
+        if (!product) {
+          throw new Error('Ürün bulunamadı');
+        }
+
+        const variant = product.variants.edges[0].node;
+        const existingItem = items.find((item) => item.variantId === variantId);
+
+        let newItems;
+        if (existingItem) {
+          // Update quantity
+          newItems = items.map((item) =>
+            item.variantId === variantId
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
+          );
+        } else {
+          // Add new item
+          const newItem = {
+            id: `mock_line_${Date.now()}`,
+            variantId,
+            quantity,
+            title: product.title,
+            variantTitle: variant.title,
+            price: parseFloat(variant.priceV2.amount),
+            currency: variant.priceV2.currencyCode,
+            image: product.images.edges[0]?.node.url || '',
+            handle: product.handle,
+          };
+          newItems = [...items, newItem];
+        }
+
+        // Calculate totals
+        const subtotal = newItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        const newTotal = {
+          total: subtotal,
+          subtotal: subtotal,
+          tax: 0,
+        };
+
+        dispatch(setCartItems(newItems));
+        dispatch(setCartTotal(newTotal));
+        await saveMockCart(newItems, newTotal);
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error adding to mock cart:', error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const updateQuantity = async (lineId: string, quantity: number) => {
+      setLoading(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        if (quantity <= 0) {
+          await removeFromCart(lineId);
+          return;
+        }
+
+        const newItems = items.map((item) =>
+          item.id === lineId ? { ...item, quantity } : item
+        );
+
+        const subtotal = newItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        const newTotal = { total: subtotal, subtotal, tax: 0 };
+
+        dispatch(setCartItems(newItems));
+        dispatch(setCartTotal(newTotal));
+        await saveMockCart(newItems, newTotal);
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const removeFromCart = async (lineId: string) => {
+      setLoading(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        const newItems = items.filter((item) => item.id !== lineId);
+        const subtotal = newItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        const newTotal = { total: subtotal, subtotal, tax: 0 };
+
+        dispatch(setCartItems(newItems));
+        dispatch(setCartTotal(newTotal));
+        await saveMockCart(newItems, newTotal);
+      } catch (error) {
+        console.error('Error removing from cart:', error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const clearCart = async () => {
+      try {
+        await AsyncStorage.removeItem(MOCK_CART_KEY);
+        dispatch(clearCartAction());
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+      }
+    };
+
+    return {
+      cartId: 'mock_cart',
+      items,
+      total,
+      itemCount,
+      loading,
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      clearCart,
+      refetch: loadMockCart,
+      getCheckoutUrl: () => null,
+    };
+  }
+
+  // Real Mode - Shopify API
   const [createCart, { loading: creating }] = useMutation(CART_CREATE);
   const [addLines, { loading: adding }] = useMutation(CART_LINES_ADD);
   const [updateLines, { loading: updating }] = useMutation(CART_LINES_UPDATE);

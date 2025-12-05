@@ -27,6 +27,7 @@ export type AuthStackParamList = {
 export type MainTabParamList = {
   Home: undefined;
   Products: NavigatorScreenParams<ProductsStackParamList>;
+  Favorites: undefined;
   Cart: undefined;
   Profile: NavigatorScreenParams<ProfileStackParamList>;
 };

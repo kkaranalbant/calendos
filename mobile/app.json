@@ -1,4 +1,20 @@
 {
-  "name": "KalendosMobile",
-  "displayName": "KalendosMobile"
+  "expo": {
+    "name": "Kalendos",
+    "slug": "kalendos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#4CAF50"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kalendos.mobile"
+    },
+    "android": {
+      "package": "com.kalendos.mobile"
+    },
+    "scheme": "kalendos"
+  }
 }

@@ -15,6 +15,8 @@ import {
 } from '../shopify/mutations/customer.mutations';
 import { GET_CUSTOMER } from '../shopify/queries/customer.queries';
 import { tokenStorage } from '../utils/tokenStorage';
+import { MOCK_TEST_USER, MOCK_CUSTOMER } from '../shopify/mockData';
+import IS_MOCK_MODE from '../config/mockMode';
 
 /**
  * Custom hook for authentication operations
@@ -92,6 +94,57 @@ export const useAuth = () => {
       dispatch(setLoading(true));
       dispatch(setError(null));
 
+      // Mock Mode
+      if (IS_MOCK_MODE) {
+        // Simulate network delay
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        // Check credentials
+        if (
+          data.email === MOCK_TEST_USER.email &&
+          data.password === MOCK_TEST_USER.password
+        ) {
+          const mockAccessToken = 'mock_access_token_' + Date.now();
+          const mockExpiresAt = new Date(Date.now() + 86400000).toISOString();
+
+          // Save to Redux
+          dispatch(
+            loginSuccess({
+              customerAccessToken: mockAccessToken,
+              tokenExpiresAt: mockExpiresAt,
+            })
+          );
+
+          dispatch(
+            setCustomerInfo({
+              customerId: MOCK_CUSTOMER.id,
+              email: MOCK_CUSTOMER.email,
+              firstName: MOCK_CUSTOMER.firstName,
+              lastName: MOCK_CUSTOMER.lastName,
+            })
+          );
+
+          // Save to AsyncStorage
+          await tokenStorage.saveAuth({
+            accessToken: mockAccessToken,
+            expiresAt: mockExpiresAt,
+            email: data.email,
+            customerId: MOCK_CUSTOMER.id,
+            firstName: MOCK_CUSTOMER.firstName,
+            lastName: MOCK_CUSTOMER.lastName,
+          });
+
+          dispatch(setLoading(false));
+          return { success: true, accessToken: mockAccessToken };
+        } else {
+          dispatch(setLoading(false));
+          const errorMessage = 'E-posta veya şifre hatalı';
+          dispatch(setError(errorMessage));
+          throw new Error(errorMessage);
+        }
+      }
+
+      // Real Mode
       // Get access token
       const result = await createAccessToken({
         variables: {
@@ -183,13 +236,16 @@ export const useAuth = () => {
     try {
       dispatch(setLoading(true));
 
-      // Delete access token from Shopify
-      if (authState.customerAccessToken) {
-        await deleteAccessToken({
-          variables: {
-            customerAccessToken: authState.customerAccessToken,
-          },
-        });
+      // Mock Mode - Skip API call
+      if (!IS_MOCK_MODE) {
+        // Delete access token from Shopify
+        if (authState.customerAccessToken) {
+          await deleteAccessToken({
+            variables: {
+              customerAccessToken: authState.customerAccessToken,
+            },
+          });
+        }
       }
 
       // Clear local storage

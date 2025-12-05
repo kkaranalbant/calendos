@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  Share,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -17,12 +18,13 @@ import { theme } from '../../theme';
 import { Button } from '../../components';
 import { useProduct } from '../../hooks/useProducts';
 import { useCart } from '../../hooks/useCart';
+import { useFavorites } from '../../hooks/useFavorites';
 import {
   getProductImages,
   getProductVariants,
   formatPrice,
   isProductInStock,
-} from '../shopify/types/product.types';
+} from '../../shopify/types/product.types';
 
 const { width } = Dimensions.get('window');
 
@@ -45,6 +47,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const { handle } = route.params;
   const { product, loading, error } = useProduct(handle);
   const { addToCart, loading: addingToCart } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
@@ -75,6 +78,36 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const variants = getProductVariants(product);
   const selectedVariant = variants[selectedVariantIndex];
   const inStock = isProductInStock(product);
+
+  const favoriteProduct = {
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    priceRange: product.priceRange,
+    images: product.images,
+  };
+
+  const handleFavoriteToggle = () => {
+    toggleFavorite(favoriteProduct);
+  };
+
+  const handleShare = async () => {
+    try {
+      const result = await Share.share({
+        message: `${product.title} - Kalendos'tan taze tropikal meyveler!\n\nFiyat: ${formatPrice(selectedVariant.price)}\n\nDetaylar için: https://kalendos.com/products/${product.handle}`,
+        url: `https://kalendos.com/products/${product.handle}`,
+        title: product.title,
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared via:', result.activityType);
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('Hata', 'Paylaşım sırasında bir hata oluştu');
+    }
+  };
 
   const handleAddToCart = async () => {
     try {
@@ -122,6 +155,26 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               />
             ))}
           </ScrollView>
+
+          {/* Share Button */}
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={handleShare}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.shareIcon}>📤</Text>
+          </TouchableOpacity>
+
+          {/* Favorite Button */}
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={handleFavoriteToggle}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.favoriteIcon}>
+              {isFavorite(product.id) ? '❤️' : '🤍'}
+            </Text>
+          </TouchableOpacity>
 
           {/* Image indicators */}
           {images.length > 1 && (
@@ -374,5 +427,35 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.background,
+  },
+  shareButton: {
+    position: 'absolute',
+    top: theme.spacing.md,
+    left: theme.spacing.md,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...theme.shadows.lg,
+  },
+  shareIcon: {
+    fontSize: 24,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: theme.spacing.md,
+    right: theme.spacing.md,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...theme.shadows.lg,
+  },
+  favoriteIcon: {
+    fontSize: 24,
   },
 });

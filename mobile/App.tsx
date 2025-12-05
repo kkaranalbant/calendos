@@ -13,10 +13,16 @@ import { ApolloProvider } from '@apollo/client';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { store } from './src/store/store';
 import shopifyClient from './src/shopify/client';
+import mockClient from './src/shopify/mockClient';
+import IS_MOCK_MODE from './src/config/mockMode';
 import RootNavigator from './src/navigation/RootNavigator';
 import { tokenStorage } from './src/utils/tokenStorage';
 import { restoreAuth } from './src/store/slices/authSlice';
 import { theme } from './src/theme';
+import { ThemeProvider } from './src/contexts/ThemeContext';
+
+// Mock mode ise mock client kullan, değilse gerçek Shopify client'ı kullan
+const apolloClient = IS_MOCK_MODE ? mockClient : shopifyClient;
 
 const AppContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -68,11 +74,13 @@ const App: React.FC = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ReduxProvider store={store}>
-          <ApolloProvider client={shopifyClient}>
-            <AppContent />
-          </ApolloProvider>
-        </ReduxProvider>
+        <ThemeProvider>
+          <ReduxProvider store={store}>
+            <ApolloProvider client={apolloClient}>
+              <AppContent />
+            </ApolloProvider>
+          </ReduxProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

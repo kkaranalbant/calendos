@@ -203,11 +203,11 @@ This project follows an 8-phase development plan:
 - ✅ **Phase 3**: Product catalog & search
 - ✅ **Phase 4**: Cart & checkout
 - ✅ **Phase 5**: User profile & orders
-- ⏳ **Phase 6**: Mobile-specific features (push, maps, camera, offline)
+- ✅ **Phase 6**: Advanced features (Wishlist, Dark Mode, Share)
 - ⏳ **Phase 7**: Content & polish
 - ⏳ **Phase 8**: Deployment & launch
 
-See \`/root/.claude/plans/hashed-nibbling-lake.md\` for the complete implementation plan.
+**MVP+ READY!** 🎉 All core + advanced features complete (Phases 1-6).
 
 ## Available Scripts
 
@@ -232,9 +232,9 @@ npm run prisma:migrate   # Run database migrations
 npm run prisma:studio    # Open Prisma Studio (database GUI)
 \`\`\`
 
-## Project Status: Phase 5 Complete ✅
+## Project Status: Phase 6 Complete ✅
 
-Phase 5 (User Profile & Orders) has been completed. **MVP is now ready!** 🚀
+Phase 6 (Advanced Features) has been completed. **MVP+ is now ready!** 🚀
 
 The following are now ready:
 
@@ -291,6 +291,14 @@ The following are now ready:
 - useCustomer and useOrders custom hooks
 - Full Shopify Customer API integration
 
+### Phase 6 - Advanced Features (Quick Wins) ✅
+- **Wishlist/Favorites**: Save products, favorites screen, heart icons, badge counter
+- **Dark Mode**: Light/Dark themes, theme toggle in Settings, AsyncStorage persistence
+- **Product Share**: Share products via native share sheet (WhatsApp, Instagram, etc.)
+- useFavorites custom hook
+- ThemeContext for global theme management
+- No new dependencies (built-in React Native APIs)
+
 ### Shopify Integration ✅
 - Shopify GraphQL queries (products, collections, search, cart, customers, orders)
 - Shopify Cart mutations (create, add lines, update, remove)
@@ -302,17 +310,26 @@ The following are now ready:
 - Native Shopify checkout integration
 - Order tracking and history
 
-## Next Steps (Phase 6)
+## Next Steps (Phase 7)
 
-Phase 6 will implement advanced features:
+Phase 7 will focus on content & polish:
 
-1. Push notifications (Firebase Cloud Messaging)
-2. Location services and map integration
-3. QR/Barcode scanner for quick product lookup
-4. Offline mode with product caching
-5. Wishlist/Favorites functionality
-6. Product reviews and ratings
-7. Social features (referral, share products)
+1. Blog/Content integration (Shopify Blog API)
+2. FAQ and About screens
+3. Error handling improvements
+4. Loading states polish (skeleton screens, shimmer effects)
+5. Animations & transitions
+6. Deep linking setup
+7. Performance optimization
+8. Accessibility improvements
+
+### Optional Phase 6 Advanced Features
+- Multi-language support (i18n)
+- Product reviews and ratings
+- Push notifications (Firebase Cloud Messaging)
+- Offline mode with product caching
+- QR/Barcode scanner
+- Location services and maps
 
 ## Troubleshooting
 
@@ -369,5 +386,5 @@ For setup issues or questions, refer to:
 ---
 
 **Last Updated**: 2025-12-04
-**Current Phase**: Phase 5 Complete ✅ **MVP READY!** 🎉
-**Next Phase**: Phase 6 - Advanced Features (Push, Maps, Offline, Wishlist)
+**Current Phase**: Phase 6 Complete ✅ **MVP+ READY!** 🚀
+**Next Phase**: Phase 7 - Content & Polish

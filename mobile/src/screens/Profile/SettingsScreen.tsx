@@ -12,6 +12,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../navigation/types';
 import { theme } from '../../theme';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   ProfileStackParamList,
@@ -82,21 +83,20 @@ const SettingToggle: React.FC<SettingToggleProps> = ({
     <Switch
       value={value}
       onValueChange={onValueChange}
-      trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-      thumbColor={theme.colors.card}
+      trackColor={{ false: '#E0E0E0', true: '#4CAF50' }}
+      thumbColor="#FFFFFF"
     />
   </View>
 );
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
+  const { isDark, toggleTheme, colors } = useTheme();
+
   // Notification settings
   const [pushEnabled, setPushEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promotions, setPromotions] = useState(false);
-
-  // App settings
-  const [darkMode, setDarkMode] = useState(false);
 
   const handleLanguagePress = () => {
     Alert.alert('Dil Seçimi', 'Şu anda sadece Türkçe desteklenmektedir.', [
@@ -140,12 +140,49 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
     );
   };
 
+  // Create dynamic styles based on current theme
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      ...styles.container,
+      backgroundColor: colors.background,
+    },
+    section: styles.section,
+    sectionTitle: {
+      ...styles.sectionTitle,
+      color: colors.textSecondary,
+    },
+    settingsCard: {
+      ...styles.settingsCard,
+      backgroundColor: colors.card,
+    },
+    settingTitle: {
+      ...styles.settingTitle,
+      color: colors.text,
+    },
+    settingSubtitle: {
+      ...styles.settingSubtitle,
+      color: colors.textSecondary,
+    },
+    chevron: {
+      ...styles.chevron,
+      color: colors.textSecondary,
+    },
+    divider: {
+      ...styles.divider,
+      backgroundColor: colors.border,
+    },
+    footerText: {
+      ...styles.footerText,
+      color: colors.textSecondary,
+    },
+  });
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={dynamicStyles.container}>
       {/* Notifications */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Bildirimler</Text>
-        <View style={styles.settingsCard}>
+      <View style={dynamicStyles.section}>
+        <Text style={dynamicStyles.sectionTitle}>Bildirimler</Text>
+        <View style={dynamicStyles.settingsCard}>
           <SettingToggle
             icon="🔔"
             title="Push Bildirimleri"
@@ -153,7 +190,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
             value={pushEnabled}
             onValueChange={setPushEnabled}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingToggle
             icon="📧"
             title="E-posta Bildirimleri"
@@ -161,7 +198,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
             value={emailEnabled}
             onValueChange={setEmailEnabled}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingToggle
             icon="📦"
             title="Sipariş Güncellemeleri"
@@ -169,7 +206,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
             value={orderUpdates}
             onValueChange={setOrderUpdates}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingToggle
             icon="🎁"
             title="Kampanyalar ve Fırsatlar"
@@ -181,24 +218,24 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
       </View>
 
       {/* App Settings */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Uygulama</Text>
-        <View style={styles.settingsCard}>
+      <View style={dynamicStyles.section}>
+        <Text style={dynamicStyles.sectionTitle}>Uygulama</Text>
+        <View style={dynamicStyles.settingsCard}>
           <SettingToggle
             icon="🌙"
             title="Karanlık Mod"
             subtitle="Koyu tema kullan"
-            value={darkMode}
-            onValueChange={setDarkMode}
+            value={isDark}
+            onValueChange={toggleTheme}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingItem
             icon="🌐"
             title="Dil"
             subtitle="Türkçe"
             onPress={handleLanguagePress}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingItem
             icon="🗑️"
             title="Önbelleği Temizle"
@@ -209,30 +246,30 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
       </View>
 
       {/* Legal & Support */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Yasal ve Destek</Text>
-        <View style={styles.settingsCard}>
+      <View style={dynamicStyles.section}>
+        <Text style={dynamicStyles.sectionTitle}>Yasal ve Destek</Text>
+        <View style={dynamicStyles.settingsCard}>
           <SettingItem
             icon="🔒"
             title="Gizlilik Politikası"
             subtitle="Veri koruma ve gizlilik"
             onPress={handlePrivacyPress}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingItem
             icon="📄"
             title="Kullanım Koşulları"
             subtitle="Hizmet şartları"
             onPress={handleTermsPress}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingItem
             icon="❓"
             title="Yardım ve Destek"
             subtitle="SSS ve iletişim"
             onPress={handleHelpPress}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingItem
             icon="⭐"
             title="Uygulamayı Değerlendir"
@@ -243,23 +280,23 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
       </View>
 
       {/* About */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Hakkında</Text>
-        <View style={styles.settingsCard}>
+      <View style={dynamicStyles.section}>
+        <Text style={dynamicStyles.sectionTitle}>Hakkında</Text>
+        <View style={dynamicStyles.settingsCard}>
           <SettingItem
             icon="📱"
             title="Versiyon"
             subtitle="1.0.0"
             showChevron={false}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingItem
             icon="🏢"
             title="Kalendos"
             subtitle="Taze tropikal meyveler"
             showChevron={false}
           />
-          <View style={styles.divider} />
+          <View style={dynamicStyles.divider} />
           <SettingItem
             icon="©️"
             title="Copyright"
@@ -278,7 +315,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Made with ❤️ in Turkey</Text>
+        <Text style={dynamicStyles.footerText}>Made with ❤️ in Turkey</Text>
       </View>
     </ScrollView>
   );

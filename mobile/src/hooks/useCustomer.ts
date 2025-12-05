@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppSelector } from '../store/hooks';
 import { GET_CUSTOMER } from '../shopify/queries/customer.queries';
 import {
@@ -8,11 +10,174 @@ import {
   CUSTOMER_ADDRESS_DELETE,
   CUSTOMER_DEFAULT_ADDRESS_UPDATE,
 } from '../shopify/mutations/customer.mutations';
+import { MOCK_CUSTOMER } from '../shopify/mockData';
+import IS_MOCK_MODE from '../config/mockMode';
 
 export const useCustomer = () => {
   const { accessToken } = useAppSelector((state) => state.auth);
 
-  // Query customer data
+  // Mock Mode
+  if (IS_MOCK_MODE) {
+    const MOCK_CUSTOMER_KEY = '@kalendos_mock_customer';
+
+    const [customer, setCustomer] = useState(MOCK_CUSTOMER);
+    const [loading, setLoading] = useState(true);
+    const [updating, setUpdating] = useState(false);
+    const [creatingAddress, setCreatingAddress] = useState(false);
+    const [updatingAddress, setUpdatingAddress] = useState(false);
+    const [deletingAddress, setDeletingAddress] = useState(false);
+    const [settingDefault, setSettingDefault] = useState(false);
+
+    // Load customer from storage
+    useEffect(() => {
+      const loadCustomer = async () => {
+        try {
+          const stored = await AsyncStorage.getItem(MOCK_CUSTOMER_KEY);
+          if (stored) {
+            setCustomer(JSON.parse(stored));
+          }
+        } catch (error) {
+          console.error('Error loading mock customer:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadCustomer();
+    }, []);
+
+    // Save customer to storage
+    const saveCustomer = async (data: any) => {
+      console.log('💾 saveCustomer çağrıldı');
+      try {
+        const jsonData = JSON.stringify(data);
+        console.log('📝 AsyncStorage\'a yazılıyor...');
+        await AsyncStorage.setItem(MOCK_CUSTOMER_KEY, jsonData);
+        console.log('✅ AsyncStorage yazma başarılı');
+        setCustomer(data);
+        console.log('✅ State güncellendi');
+      } catch (error) {
+        console.error('❌ saveCustomer hatası:', error);
+        throw error;
+      }
+    };
+
+    const addresses = customer?.addresses?.edges?.map((edge: any) => edge.node) || [];
+    const defaultAddress = customer?.defaultAddress || null;
+
+    const updateCustomer = async (data: any) => {
+      console.log('🔧 useCustomer.updateCustomer çağrıldı, data:', data);
+      setUpdating(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const updatedCustomer = { ...customer, ...data };
+        console.log('📦 Güncellenmiş müşteri:', updatedCustomer);
+        await saveCustomer(updatedCustomer);
+        console.log('✅ saveCustomer tamamlandı');
+        return updatedCustomer;
+      } catch (error) {
+        console.error('❌ updateCustomer hatası:', error);
+        throw error;
+      } finally {
+        setUpdating(false);
+      }
+    };
+
+    const createAddress = async (address: any) => {
+      console.log('🔧 useCustomer.createAddress çağrıldı, adres:', address);
+      setCreatingAddress(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const newAddress = {
+          id: `gid://shopify/MailingAddress/${Date.now()}`,
+          ...address,
+        };
+        console.log('📦 Yeni adres oluşturuldu:', newAddress);
+        const updatedCustomer = {
+          ...customer,
+          addresses: {
+            edges: [...(customer.addresses?.edges || []), { node: newAddress }],
+          },
+        };
+        console.log('📦 Güncellenmiş müşteri:', updatedCustomer);
+        await saveCustomer(updatedCustomer);
+        console.log('✅ saveCustomer tamamlandı');
+        return newAddress;
+      } catch (error) {
+        console.error('❌ createAddress hatası:', error);
+        throw error;
+      } finally {
+        setCreatingAddress(false);
+      }
+    };
+
+    const updateAddress = async (id: string, address: any) => {
+      setUpdatingAddress(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const updatedAddresses = customer.addresses?.edges.map((edge: any) =>
+          edge.node.id === id ? { node: { ...edge.node, ...address } } : edge
+        );
+        const updatedCustomer = { ...customer, addresses: { edges: updatedAddresses } };
+        await saveCustomer(updatedCustomer);
+        return address;
+      } finally {
+        setUpdatingAddress(false);
+      }
+    };
+
+    const deleteAddress = async (id: string) => {
+      setDeletingAddress(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const updatedAddresses = customer.addresses?.edges.filter(
+          (edge: any) => edge.node.id !== id
+        );
+        const updatedCustomer = { ...customer, addresses: { edges: updatedAddresses } };
+        await saveCustomer(updatedCustomer);
+        return id;
+      } finally {
+        setDeletingAddress(false);
+      }
+    };
+
+    const setDefaultAddress = async (id: string) => {
+      setSettingDefault(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const address = customer.addresses?.edges.find(
+          (edge: any) => edge.node.id === id
+        )?.node;
+        if (address) {
+          const updatedCustomer = { ...customer, defaultAddress: address };
+          await saveCustomer(updatedCustomer);
+        }
+        return customer;
+      } finally {
+        setSettingDefault(false);
+      }
+    };
+
+    return {
+      customer,
+      addresses,
+      defaultAddress,
+      loading,
+      error: null,
+      updating,
+      creatingAddress,
+      updatingAddress,
+      deletingAddress,
+      settingDefault,
+      updateCustomer,
+      createAddress,
+      updateAddress,
+      deleteAddress,
+      setDefaultAddress,
+      refetch: () => Promise.resolve(),
+    };
+  }
+
+  // Real Mode - Query customer data
   const { data, loading, error, refetch } = useQuery(GET_CUSTOMER, {
     variables: { customerAccessToken: accessToken },
     skip: !accessToken,

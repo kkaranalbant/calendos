@@ -123,3 +123,8 @@ export const getValidationError = (
 
   return null;
 };
+
+// Named exports for convenience (used by EditProfileScreen and AddressFormScreen)
+export const validateEmail = validation.email;
+export const validatePhone = validation.phone;
+export const validatePassword = validation.password;

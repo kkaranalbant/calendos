@@ -52,43 +52,80 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation
   }, [customer]);
 
   const validateForm = (): boolean => {
+    console.log('🔍 validateForm başladı');
     const newErrors: typeof errors = {};
 
+    console.log('Checking firstName:', firstName);
     if (!firstName.trim()) {
       newErrors.firstName = 'İsim gereklidir';
+      console.log('❌ firstName hatası');
     }
 
+    console.log('Checking lastName:', lastName);
     if (!lastName.trim()) {
       newErrors.lastName = 'Soyisim gereklidir';
+      console.log('❌ lastName hatası');
     }
 
+    console.log('Checking email:', email);
     if (!email.trim()) {
       newErrors.email = 'E-posta gereklidir';
+      console.log('❌ email boş');
     } else if (!validateEmail(email)) {
       newErrors.email = 'Geçerli bir e-posta adresi giriniz';
+      console.log('❌ email format hatası');
     }
 
+    console.log('Checking phone:', phone);
     if (phone && !validatePhone(phone)) {
       newErrors.phone = 'Geçerli bir telefon numarası giriniz';
+      console.log('❌ phone format hatası');
     }
 
+    console.log('📋 Toplanan hatalar:', newErrors);
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    console.log('✅ Form geçerli mi?', isValid);
+    return isValid;
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
+    console.log('🔵 handleSave çağrıldı');
+    console.log('📝 Form verileri:', {
+      firstName,
+      lastName,
+      email,
+      phone,
+    });
+
+    const isValid = validateForm();
+    console.log('🔍 Form geçerli mi?', isValid);
+    console.log('❌ Validasyon hataları:', errors);
+
+    if (!isValid) {
+      console.log('❌ Form validasyon hatası - işlem iptal');
+      Alert.alert(
+        'Form Hatası',
+        'Lütfen tüm zorunlu alanları doğru şekilde doldurun:\n' +
+          Object.entries(errors)
+            .map(([key, value]) => `• ${value}`)
+            .join('\n')
+      );
       return;
     }
 
+    console.log('✅ Form geçerli, updateCustomer çağrılıyor...');
+
     try {
-      await updateCustomer({
+      const result = await updateCustomer({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
         acceptsMarketing,
       });
+
+      console.log('✅ updateCustomer başarılı:', result);
 
       Alert.alert('Başarılı', 'Profil bilgileriniz güncellendi', [
         {
@@ -97,6 +134,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation
         },
       ]);
     } catch (error: any) {
+      console.error('❌ Hata:', error);
       Alert.alert('Hata', error.message || 'Profil güncellenirken bir hata oluştu');
     }
   };

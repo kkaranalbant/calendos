@@ -14,6 +14,7 @@ import {
   getFirstImage,
   isProductInStock,
 } from '../shopify/types/product.types';
+import { useFavorites } from '../hooks/useFavorites';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - theme.spacing.lg * 3) / 2;
@@ -29,11 +30,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onPress,
   variant = 'grid',
 }) => {
+  const { isFavorite, toggleFavorite } = useFavorites();
   const image = getFirstImage(product);
   const inStock = isProductInStock(product);
   const minPrice = formatPrice(product.priceRange.minVariantPrice);
   const maxPrice = formatPrice(product.priceRange.maxVariantPrice);
   const priceDisplay = minPrice === maxPrice ? minPrice : `${minPrice} - ${maxPrice}`;
+
+  const favoriteProduct = {
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    priceRange: product.priceRange,
+    images: product.images,
+  };
+
+  const handleFavoriteToggle = (e: any) => {
+    e.stopPropagation();
+    toggleFavorite(favoriteProduct);
+  };
 
   if (variant === 'list') {
     return (
@@ -85,6 +100,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <Text style={styles.outOfStockOverlayText}>Stokta Yok</Text>
           </View>
         )}
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={handleFavoriteToggle}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.favoriteIcon}>
+            {isFavorite(product.id) ? '❤️' : '🤍'}
+          </Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.gridContent}>
         <Text style={styles.gridTitle} numberOfLines={2}>
@@ -197,5 +221,20 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.textInverse,
     fontWeight: theme.typography.fontWeight.semibold,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: theme.spacing.sm,
+    right: theme.spacing.sm,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...theme.shadows.md,
+  },
+  favoriteIcon: {
+    fontSize: 20,
   },
 });
